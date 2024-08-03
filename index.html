@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Frontend Clone</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #d1d1d1;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #202123;
+            border-right: 1px solid #3a3a3c;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+            position: relative;
+        }
+
+        .sidebar.closed {
+            transform: translateX(100%);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2em;
+            margin: 0;
+
+            color: #d1d1d1;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #d1d1d1;
+            padding: 10px 0;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #3a3a3c;
+            border-radius: 5px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            position: relative;
+        }
+
+        .header {
+            background-color: #2a2a2a;
+            border-bottom: 1px solid #3a3a3c;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            margin-left: 30px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+
+        .header h1 i {
+            margin-left: 10px;
+        }
+
+        .header .profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .header .profile span {
+            margin-right: 10px;
+        }
+
+        .header .profile img {
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+        }
+
+        .body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .body-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .body-content img {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .options div {
+            background-color: #3a3a3c;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 200px;
+        }
+
+        .options div:hover {
+            background-color: #4a4a4c;
+        }
+
+        .chat-window {
+            flex: 1;
+            overflow: hidden;
+            padding: 20px;
+            position: relative;
+        }
+
+        .chat-window-content {
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .chat-message {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-message .message-content {
+            background-color: #3a3a3c;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 60%;
+        }
+
+        .chat-message.user .message-content {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .footer {
+            padding: 15px;
+            background-color: #2a2a2a;
+            border-top: 1px solid #3a3a3c;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .footer input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            background-color: #3a3a3c;
+            color: #d1d1d1;
+            margin-right: 10px;
+        }
+
+        .footer button {
+            background-color: none;
+            color: #fff;
+            border: none;
+            margin: 3px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 15px;
+            left: 0px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            cursor: pointer;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+        }
+
+        .sidebar.closed + .main-content .toggle-sidebar-btn {
+            left: 10px;
+        }
+
+        /* Custom Scrollbar */
+        .sidebar::-webkit-scrollbar,
+        .body-content::-webkit-scrollbar,
+        .chat-window-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .body-content::-webkit-scrollbar-thumb,
+        .chat-window-content::-webkit-scrollbar-thumb {
+            background-color: #4a4a4c;
+            border-radius: 4px;
+        }
+
+        /* Light Theme */
+        body.light-theme {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .sidebar.light-theme {
+            background-color: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .header.light-theme, .footer.light-theme {
+            background-color: #e9ecef;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .chat-message .message-content.light-theme {
+            background-color: #e9ecef;
+        }
+
+        .chat-message.user .message-content.light-theme {
+            background-color: #007bff;
+            color: #ffffff;
+        }
+
+        .emoji-options span {
+            font-size: 2em;
+            cursor: pointer;
+        }
+
+        .avatar-options img {
+            width: 50px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="/images/chatgpt-logo.png" alt="ChatGPT Logo">
+            <h2>ChatGPT</h2>
+        </div>
+        <a href="#">ChatGPT</a>
+        <a href="#">Neovim Navigator</a>
+        <a href="#">Error Solver</a>
+        <a href="#">Docs GPT</a>
+        <a href="#">Website Builder</a>
+        <a href="#">Explore GPTs</a>
+        <div class="mt-auto">
+            <p>Today</p>
+            <a href="#">ChatGPT Frontend Clone</a>
+            <a href="#">Ubicación del tesoro</a>
+            <p>Yesterday</p>
+            <a href="#">Basic Android Interview Questions</a>
+            <p>Previous 7 Days</p>
+            <a href="#">Oración de bendición</a>
+            <a href="#">Convert HEIC to JPEG</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>ChatGPT 4.0 <i class="fas fa-chevron-down"></i></h1>
+            <div class="profile">
+                <span>Suprakash Roy</span>
+                <img src="/images/profile.jpg" alt="Profile Image">
+            </div>
+        </div>
+        <div class="body">
+            <div class="body-content">
+                <img src="/images/chatgpt-logo.png" alt="ChatGPT Logo">
+                <button class="btn btn-primary mb-3" onclick="newChat()">New Chat</button>
+                <div class="options">
+                    <div onclick="addMessage('Recipe with what is in my kitchen')">Recipe with what is in my kitchen</div>
+                    <div onclick="addMessage('Fun fact about the Roman Empire')">Fun fact about the Roman Empire</div>
+                    <div onclick="addMessage('Plan a relaxing day')">Plan a relaxing day</div>
+                    <div onclick="addMessage('Superhero shark story')">Superhero shark story</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-window" id="chat-window">
+            <div class="chat-window-content">
+            </div>
+        </div>
+        <div class="footer">
+            <button class="btn btn-secondary" data-toggle="modal" data-target="#emojiModal">
+                <img src="/images/emoji logo.webp" alt="Emoji Icon" style="width: 20px; height: 20px;">
+            </button>
+            <button class="btn btn-secondary" data-toggle="modal" data-target="#avatarModal">
+                <img src="/images/avatar logo.jpg" alt="Avatar Icon" style="width: 25px; height: 25px;">
+            </button>
+            <form id="fileUploadForm">
+                <input type="file" id="fileUploadInput" style="display: none;" onchange="uploadFile()">
+                <button class="btn btn-secondary" onclick="document.getElementById('fileUploadInput').click()">
+                    <img src="/images/uploads photo.png" alt="Upload Icon" style="width: 25px; height: 25px;">
+                </button>
+            </form>
+            <input type="text" id="chat-input" placeholder="Message ChatGPT" onkeydown="if (event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()"><i class="fas fa-arrow-up"></i></button>
+            <button class="btn btn-secondary" id="themeSwitcher">
+                <img src="/images/theme logo.png" alt="Switch Theme Icon" style="width: 60px; height: 60px;">
+            </button>
+        </div>
+    </div>
+
+    <!-- Emoji Modal -->
+    <div class="modal" id="emojiModal" tabindex="-1" aria-labelledby="emojiModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emojiModalLabel">Choose Emoji</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="emoji-options">
+                        <span class="emoji-option" onclick="addEmoji('😊')">😊</span>
+<span class="emoji-option" onclick="addEmoji('😂')">😂</span>
+<span class="emoji-option" onclick="addEmoji('😍')">😍</span>
+<span class="emoji-option" onclick="addEmoji('🥰')">🥰</span>
+<span class="emoji-option" onclick="addEmoji('😎')">😎</span>
+<span class="emoji-option" onclick="addEmoji('🤩')">🤩</span>
+<span class="emoji-option" onclick="addEmoji('😋')">😋</span>
+<span class="emoji-option" onclick="addEmoji('😉')">😉</span>
+<span class="emoji-option" onclick="addEmoji('🙃')">🙃</span>
+<span class="emoji-option" onclick="addEmoji('😇')">😇</span>
+<span class="emoji-option" onclick="addEmoji('🤗')">🤗</span>
+<span class="emoji-option" onclick="addEmoji('😜')">😜</span>
+<span class="emoji-option" onclick="addEmoji('😝')">😝</span>
+<span class="emoji-option" onclick="addEmoji('😁')">😁</span>
+<span class="emoji-option" onclick="addEmoji('😆')">😆</span>
+<span class="emoji-option" onclick="addEmoji('🤔')">🤔</span>
+<span class="emoji-option" onclick="addEmoji('🤨')">🤨</span>
+<span class="emoji-option" onclick="addEmoji('😏')">😏</span>
+<span class="emoji-option" onclick="addEmoji('😛')">😛</span>
+<span class="emoji-option" onclick="addEmoji('😚')">😚</span>
+                        <span class="emoji-option" onclick="addEmoji('👍')">👍</span>
+                        <!-- Add more emojis as needed -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Modal -->
+    <div class="modal" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="avatarModalLabel">Choose Avatar</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="avatar-options">
+                        <img src="/images/anime.avif" class="avatar-option" onclick="chooseAvatar('a')">
+                        <img src="/images/real.avif" class="avatar-option" onclick="chooseAvatar('a')">
+                        <img src="/images/anime-girl-sad-avatar_950633-24.avif" class="avatar-option" onclick="chooseAvatar('a')">
+                        <img src="/images/cute-adorable-little-girl-character-avatar-isolated_925324-1728.avif" class="avatar-option" onclick="chooseAvatar('a')">
+                        <img src="/images/girl.jpg" class="avatar-option" onclick="chooseAvatar('a')">
+                        <img src="/images/funny-little-avatar-helpful-bot-assistant_969393-1429.avif" class="avatar-option" onclick="chooseAvatar('a')">
+                        <img src="/images/funny-little-avatar-helpful-bot-assistant_969393-1431.avif" class="avatar-option" onclick="chooseAvatar('a')">
+                        <!-- Add more avatars as needed -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggleSidebarBtn');
+            sidebar.classList.toggle('closed');
+            if (sidebar.classList.contains('closed')) {
+                toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+            }
+        }
+
+        document.getElementById('toggleSidebarBtn').addEventListener('click', toggleSidebar);
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                setTimeout(() => {
+                    addMessage('This is a bot response to "' + message + '".');
+                }, 1000);
+            }
+        }
+
+        function addMessage(text, sender = 'bot') {
+            const chatWindow = document.querySelector('.chat-window-content');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = text;
+            messageDiv.appendChild(messageContent);
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function newChat() {
+            document.querySelector('.chat-window-content').innerHTML = '';
+        }
+
+        function chooseAvatar(avatar) {
+            document.querySelector('.profile img').src = avatar;
+            $('#avatarModal').modal('hide');
+        }
+
+        function addEmoji(emoji) {
+            const input = document.getElementById('chat-input');
+            input.value += emoji;
+            $('#emojiModal').modal('hide');
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileUploadInput');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    addMessage(`File uploaded: ${file.name}`);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById('themeSwitcher').addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            document.querySelectorAll('.message-content').forEach(el => el.classList.toggle('light-theme'));
+        });
+    </script>
+</body>
+
+</html>
